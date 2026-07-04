@@ -1,0 +1,5 @@
+{
+  "name": "Tetris Web",
+  "description": "A classic Tetris game with 3D-looking blocks, increasing speed, and a motivating scoring system.",
+  "requestFramePermissions": []
+}
