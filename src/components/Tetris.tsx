@@ -15,6 +15,11 @@ export const Tetris: React.FC<TetrisProps> = ({ onStateChange, engineRef, soundE
   const containerRef = useRef<HTMLDivElement>(null);
   const soundManagerRef = useRef<SoundManager | null>(null);
   const [blockSize, setBlockSize] = useState(30);
+  // The rAF loop captures draw() from the first render, so drawing must read
+  // the block size through a ref — a state closure would stay frozen at the
+  // initial value and paint oversized blocks past the canvas edge.
+  const blockSizeRef = useRef(blockSize);
+  blockSizeRef.current = blockSize;
 
   useEffect(() => {
     if (!soundManagerRef.current) {
@@ -85,7 +90,7 @@ export const Tetris: React.FC<TetrisProps> = ({ onStateChange, engineRef, soundE
   const drawBlock = (ctx: CanvasRenderingContext2D, x: number, y: number, colorIndex: number) => {
     if (colorIndex === 0) return;
 
-    const size = blockSize;
+    const size = blockSizeRef.current;
     const px = x * size;
     const py = y * size;
 
@@ -143,18 +148,19 @@ export const Tetris: React.FC<TetrisProps> = ({ onStateChange, engineRef, soundE
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     // Draw grid lines
+    const bs = blockSizeRef.current;
     ctx.strokeStyle = '#222';
     ctx.lineWidth = 1;
     for (let r = 0; r <= ROWS; r++) {
       ctx.beginPath();
-      ctx.moveTo(0, r * blockSize);
-      ctx.lineTo(COLS * blockSize, r * blockSize);
+      ctx.moveTo(0, r * bs);
+      ctx.lineTo(COLS * bs, r * bs);
       ctx.stroke();
     }
     for (let c = 0; c <= COLS; c++) {
       ctx.beginPath();
-      ctx.moveTo(c * blockSize, 0);
-      ctx.lineTo(c * blockSize, ROWS * blockSize);
+      ctx.moveTo(c * bs, 0);
+      ctx.lineTo(c * bs, ROWS * bs);
       ctx.stroke();
     }
 

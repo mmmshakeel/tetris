@@ -63,6 +63,7 @@ The board must fully fit the visible screen on mobile with no clipping/scroll. S
 - **`min-h-0`** on the flex column and the board wrapper lets them shrink below the canvas's intrinsic height instead of overflowing (flex items default to `min-height: auto`). This is the core anti-clipping fix.
 - **No `aspect-ratio` on mobile** — the wrapper is `flex-1 min-h-0` and just fills available space; `aspect-[1/2]` is scoped to `lg:` (desktop). The canvas keeps its own 10:20 ratio.
 - **`Tetris.tsx` sizes the canvas via a `ResizeObserver` on its container** (not a one-shot `window` resize), so `blockSize` re-fits whenever the box changes (NEXT preview appearing, toolbar show/hide, rotation).
+- **All drawing code must read `blockSizeRef.current`, never the `blockSize` state.** The rAF loop captures `draw()` from the first render, so a state closure stays frozen at the initial 30px and paints oversized blocks past the canvas edge — this was the original "bottom rows invisible" bug. Any new draw helper must go through the ref.
 - `viewport-fit=cover` (index.html) + `env(safe-area-inset-*)` padding keep controls clear of the notch/home indicator.
 
 When testing mobile layout changes on a real device, bypass the PWA cache (hard reload / clear site data) or test against the dev server, which serves no service worker — otherwise a stale precached build hides your changes.
