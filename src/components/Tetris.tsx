@@ -54,26 +54,32 @@ export const Tetris: React.FC<TetrisProps> = ({ onStateChange, engineRef, soundE
   }, []);
 
   useEffect(() => {
-    const handleResize = () => {
-      if (containerRef.current) {
-        const { clientWidth, clientHeight } = containerRef.current;
-        // Subtract padding (8px * 2) and border (1px * 2) = 18px to ensure 
-        // the canvas fits completely within the container content area.
-        const paddingAndBorder = 18;
-        const availableWidth = Math.max(0, clientWidth - paddingAndBorder);
-        const availableHeight = Math.max(0, clientHeight - paddingAndBorder);
-        
-        // Calculate block size to fit both available width and height
-        const widthBasedSize = Math.floor(availableWidth / COLS);
-        const heightBasedSize = Math.floor(availableHeight / ROWS);
-        setBlockSize(Math.min(widthBasedSize, heightBasedSize));
-      }
+    const container = containerRef.current;
+    if (!container) return;
+
+    const recalcBlockSize = () => {
+      const { clientWidth, clientHeight } = container;
+      // Subtract padding (8px * 2) and border (1px * 2) = 18px to ensure
+      // the canvas fits completely within the container content area.
+      const paddingAndBorder = 18;
+      const availableWidth = Math.max(0, clientWidth - paddingAndBorder);
+      const availableHeight = Math.max(0, clientHeight - paddingAndBorder);
+
+      // Calculate block size to fit both available width and height
+      const widthBasedSize = Math.floor(availableWidth / COLS);
+      const heightBasedSize = Math.floor(availableHeight / ROWS);
+      const next = Math.max(0, Math.min(widthBasedSize, heightBasedSize));
+      setBlockSize((prev) => (prev === next ? prev : next));
     };
 
-    window.addEventListener('resize', handleResize);
-    handleResize();
+    // Observe the container itself so the canvas re-fits whenever its box
+    // changes size (mobile NEXT preview appearing, URL bar show/hide,
+    // orientation change) — not just on window resize.
+    const observer = new ResizeObserver(recalcBlockSize);
+    observer.observe(container);
+    recalcBlockSize();
 
-    return () => window.removeEventListener('resize', handleResize);
+    return () => observer.disconnect();
   }, []);
 
   const drawBlock = (ctx: CanvasRenderingContext2D, x: number, y: number, colorIndex: number) => {

@@ -55,6 +55,18 @@ The PWA is handled by **`vite-plugin-pwa`** (Workbox `generateSW`), configured i
 
 When changing cached assets, just rebuild — Workbox re-hashes and revisions the precache automatically (no manual cache-version bump needed).
 
+## Mobile layout (fragile — read before touching the board sizing)
+
+The board must fully fit the visible screen on mobile with no clipping/scroll. Several constraints work together; changing one in isolation tends to reintroduce clipped bottom rows:
+
+- **Root uses `h-svh`, not `h-dvh`** (`App.tsx`). `svh` is the *small* (toolbar-visible) viewport height, so the layout always fits even while iOS Safari's address bar is shown. `dvh`/`vh` can report the taller toolbar-hidden height at load and push the board's bottom rows under the toolbar.
+- **`min-h-0`** on the flex column and the board wrapper lets them shrink below the canvas's intrinsic height instead of overflowing (flex items default to `min-height: auto`). This is the core anti-clipping fix.
+- **No `aspect-ratio` on mobile** — the wrapper is `flex-1 min-h-0` and just fills available space; `aspect-[1/2]` is scoped to `lg:` (desktop). The canvas keeps its own 10:20 ratio.
+- **`Tetris.tsx` sizes the canvas via a `ResizeObserver` on its container** (not a one-shot `window` resize), so `blockSize` re-fits whenever the box changes (NEXT preview appearing, toolbar show/hide, rotation).
+- `viewport-fit=cover` (index.html) + `env(safe-area-inset-*)` padding keep controls clear of the notch/home indicator.
+
+When testing mobile layout changes on a real device, bypass the PWA cache (hard reload / clear site data) or test against the dev server, which serves no service worker — otherwise a stale precached build hides your changes.
+
 ## Cleanup context
 
 Scaffolded from an AI Studio template. Unused deps still in `package.json`: `express`, `better-sqlite3`, `@google/genai`, `dotenv`. There is no server or Gemini integration in the game — ignore the README's Gemini/AI Studio instructions and the `GEMINI_API_KEY` define in `vite.config.ts` unless asked to add such a feature.

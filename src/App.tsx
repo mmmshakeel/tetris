@@ -62,7 +62,15 @@ export default function App() {
   };
 
   return (
-    <div className="h-dvh bg-zinc-950 text-zinc-100 font-sans flex flex-col items-center justify-start p-2 sm:p-8 touch-none select-none overflow-hidden">
+    <div
+      className="h-svh bg-zinc-950 text-zinc-100 font-sans flex flex-col items-center justify-start p-2 sm:p-8 touch-none select-none overflow-hidden"
+      style={{
+        // Keep content clear of the notch / home indicator (needs
+        // viewport-fit=cover in index.html to be non-zero).
+        paddingBottom: 'calc(0.5rem + env(safe-area-inset-bottom))',
+        paddingTop: 'calc(0.5rem + env(safe-area-inset-top))',
+      }}
+    >
       {/* Mobile Header: Stats */}
       <div className="w-full max-w-[360px] flex flex-row justify-between items-center mb-2 lg:hidden px-2">
         <div className="flex flex-col items-start">
@@ -79,7 +87,7 @@ export default function App() {
         </div>
       </div>
 
-      <div className="flex-1 w-full max-w-4xl flex flex-col lg:flex-row gap-4 lg:gap-8 items-center lg:items-start justify-center overflow-hidden">
+      <div className="flex-1 min-h-0 w-full max-w-4xl flex flex-col lg:flex-row gap-4 lg:gap-8 items-center lg:items-start justify-center overflow-hidden">
         
         {/* Left Panel: Stats (Desktop Only) */}
         <div className="hidden lg:flex flex-col gap-4 w-48">
@@ -98,7 +106,11 @@ export default function App() {
         </div>
 
         {/* Center: Game Board */}
-        <div className="relative flex-1 w-full max-w-[300px] sm:max-w-[360px] h-full max-h-[80vh] lg:max-h-none aspect-[1/2]">
+        {/* No aspect-ratio on mobile: Safari forces an aspect-ratio'd flex item
+            to its full ratio height even when space is tight, pushing the
+            bottom rows past the visible area. The canvas keeps its own 10:20
+            ratio, so the wrapper just needs to fill the available space. */}
+        <div className="relative flex-1 min-h-0 w-full max-w-[300px] sm:max-w-[360px] lg:flex-none lg:h-full lg:max-h-[80vh] lg:aspect-[1/2]">
           <Tetris onStateChange={handleStateChange} engineRef={engineRef} soundEnabled={soundEnabled} musicEnabled={musicEnabled} />
           
           {/* Overlays */}
@@ -167,7 +179,7 @@ export default function App() {
         </div>
 
         {/* Mobile Mini Controls (Floating or Bottom) */}
-        <div className="lg:hidden w-full max-w-[360px] flex justify-between items-center mt-2 px-2">
+        <div className="lg:hidden shrink-0 w-full max-w-[360px] flex justify-between items-center mt-2 px-2">
            <button 
               onClick={handleTogglePause}
               className="p-3 bg-zinc-900 border border-zinc-800 rounded-full text-zinc-400"
@@ -190,7 +202,7 @@ export default function App() {
             
             <div className="flex flex-col items-center">
               <span className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold mb-1">Next</span>
-              <div className="scale-75 origin-center">
+              <div className="scale-75 origin-center h-24 flex items-center">
                 {renderNextPiece()}
               </div>
             </div>
