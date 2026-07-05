@@ -55,5 +55,9 @@ export default defineConfig(({mode}) => {
       // Do not modify—file watching is disabled to prevent flickering during agent edits.
       hmr: process.env.DISABLE_HMR !== 'true',
     },
+    preview: {
+      // Allow tunnel hostnames (localtunnel / cloudflared) to reach the preview server
+      allowedHosts: ['.loca.lt', '.trycloudflare.com'],
+    },
   };
 });
